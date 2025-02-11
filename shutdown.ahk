@@ -1,5 +1,5 @@
 #Persistent
-#SingleInstance Force
+#SingleInstance
 SetWorkingDir %A_ScriptDir% 
 
 ; 初始化变量
