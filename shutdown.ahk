@@ -5,7 +5,7 @@ SetWorkingDir %A_ScriptDir%
 ; 初始化变量
 global shutdownTime := "23:00"
 global isShutdownScheduled := false
-global countdownSeconds := 60  ; 关机前倒计时时间（秒）
+global countdownSeconds := 25  ; 修改为25秒倒计时
 
 ; 加载保存的配置
 IniRead, savedTime, %A_ScriptDir%\shutdown_config.ini, Settings, ShutdownTime, 23:00
@@ -15,7 +15,7 @@ isShutdownScheduled := (savedStatus = 1)
 
 ; 创建托盘图标
 Menu, Tray, NoStandard
-; Menu, Tray, Icon, shell32.dll, 290  ; 使用更好的关机图标
+Menu, Tray, Icon, %A_ScriptDir%\shutdown.ico ; 使用更好的关机图标
 Menu, Tray, Tip, 自动关机助手
 
 ; 创建时间子菜单
@@ -32,6 +32,7 @@ Menu, Tray, Add, 设置关机时间(&T), :TimeMenu
 Menu, Tray, Add, 未设置关机时间, DummyLabel  ; 添加初始状态的时间显示
 Menu, Tray, Disable, 未设置关机时间  ; 禁用这个菜单项，使其只作为显示用
 Menu, Tray, Add
+Menu, Tray, Add, 立即关机(&S), ShutdownNow  ; 添加立即关机选项
 Menu, Tray, Add, 取消关机(&C), CancelShutdown
 Menu, Tray, Add
 Menu, Tray, Add, 退出(&X), ExitApp
@@ -122,7 +123,7 @@ remainingMinutes := GetTimeDifference(currentTime, shutdownTime)
 FileAppend, 当前时间: %currentTime%, 目标时间: %shutdownTime%, 剩余分钟: %remainingMinutes%`n, %A_ScriptDir%\shutdown_log.txt
 
 ; 如果剩余时间小于等于0分钟，开始关机流程
-if (remainingMinutes <= 0) {
+if (remainingMinutes <= 1) {
     StartCountdown()
 }
 return
@@ -132,16 +133,13 @@ StartCountdown() {
     global countdownSeconds
     remainingSeconds := countdownSeconds
     
-    ; 添加日志
-    FileAppend, 开始倒计时，剩余秒数: %remainingSeconds%`n, %A_ScriptDir%\shutdown_log.txt
-    
     while (remainingSeconds > 0) {
         if (!isShutdownScheduled) {
             FileAppend, 关机已取消`n, %A_ScriptDir%\shutdown_log.txt
             return
         }
         
-        if (Mod(remainingSeconds, 10) = 0 || remainingSeconds <= 5) {
+        if (Mod(remainingSeconds, 5) = 0 || remainingSeconds <= 3) {  ; 修改提示频率
             SoundBeep, 750, 500
             TrayTip, 自动关机提醒, 系统将在 %remainingSeconds% 秒后关机`n右键点击托盘图标可取消, 30, 1
         }
@@ -150,15 +148,9 @@ StartCountdown() {
         remainingSeconds--
     }
     
+    ; 修改关机命令
     if (isShutdownScheduled) {
-        FileAppend, 执行关机命令`n, %A_ScriptDir%\shutdown_log.txt
-        ; 使用完整的shutdown命令并以管理员权限运行
-        try {
-            Run *RunAs shutdown.exe -s -t 0
-        } catch {
-            ; 如果上面的命令失败，尝试直接使用Shutdown命令
-            Shutdown, 1
-        }
+        Shutdown, 1
     }
 }
 
@@ -186,6 +178,12 @@ SaveConfig() {
     IniWrite, %shutdownTime%, %A_ScriptDir%\shutdown_config.ini, Settings, ShutdownTime
     IniWrite, % isShutdownScheduled ? 1 : 0, %A_ScriptDir%\shutdown_config.ini, Settings, IsScheduled
 }
+
+; 立即关机
+ShutdownNow:
+isShutdownScheduled := true
+StartCountdown()
+return
 
 ExitApp:
 ExitApp
