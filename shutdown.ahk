@@ -5,7 +5,8 @@ SetWorkingDir %A_ScriptDir%
 ; 初始化变量
 global shutdownTime := "23:00"
 global isShutdownScheduled := false
-global countdownSeconds := 25  ; 修改为25秒倒计时
+global countdownSeconds := 20  ; 修改为25秒倒计时
+
 
 ; 加载保存的配置
 IniRead, savedTime, %A_ScriptDir%\shutdown_config.ini, Settings, ShutdownTime, 23:00
@@ -15,16 +16,15 @@ isShutdownScheduled := (savedStatus = 1)
 
 ; 创建托盘图标
 Menu, Tray, NoStandard
-Menu, Tray, Icon, %A_ScriptDir%\shutdown.ico ; 使用更好的关机图标
+Menu, Tray, Icon, pifmgr.dll, 5  ; 烂苹果图标
 Menu, Tray, Tip, 自动关机助手
 
 ; 创建时间子菜单
+Menu, TimeMenu, Add, 13:00, SetPredefinedTime
 Menu, TimeMenu, Add, 21:00, SetPredefinedTime
 Menu, TimeMenu, Add, 22:00, SetPredefinedTime
 Menu, TimeMenu, Add, 23:00, SetPredefinedTime
-Menu, TimeMenu, Add, 23:30, SetPredefinedTime
 Menu, TimeMenu, Add, 00:00, SetPredefinedTime
-Menu, TimeMenu, Add
 Menu, TimeMenu, Add, 自定义时间..., SetShutdownTime
 
 ; 创建托盘菜单
@@ -128,6 +128,7 @@ if (remainingMinutes <= 1) {
 }
 return
 
+
 ; 开始倒计时
 StartCountdown() {
     global countdownSeconds
@@ -138,10 +139,17 @@ StartCountdown() {
             FileAppend, 关机已取消`n, %A_ScriptDir%\shutdown_log.txt
             return
         }
+        if (remainingSeconds == 20) {
+            TrayTip, 自动关机提醒, 系统将在 %remainingSeconds% 秒后关机`n右键点击托盘图标 -C 可取消, 30, 1
+        }
         
-        if (Mod(remainingSeconds, 5) = 0 || remainingSeconds <= 3) {  ; 修改提示频率
-            SoundBeep, 750, 500
-            TrayTip, 自动关机提醒, 系统将在 %remainingSeconds% 秒后关机`n右键点击托盘图标可取消, 30, 1
+        if (Mod(remainingSeconds, 2) = 0 ) {  ; 修改提示频率
+            SoundBeep, 200, 120
+            SoundBeep, 1200, 120
+            SoundBeep, 400, 120
+            SoundBeep, 600, 180
+            SoundBeep, 800, 120
+            SoundBeep, 1000, 180
         }
         
         Sleep, 1000
