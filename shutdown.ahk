@@ -1,6 +1,6 @@
 #Persistent
 #SingleInstance Force
-SetWorkingDir %A_ScriptDir%
+SetWorkingDir %A_ScriptDir% 
 
 ; 初始化变量
 global shutdownTime := "23:00"
@@ -15,7 +15,7 @@ isShutdownScheduled := (savedStatus = 1)
 
 ; 创建托盘图标
 Menu, Tray, NoStandard
-Menu, Tray, Icon, shell32.dll, 290  ; 使用更好的关机图标
+; Menu, Tray, Icon, shell32.dll, 290  ; 使用更好的关机图标
 Menu, Tray, Tip, 自动关机助手
 
 ; 创建时间子菜单
