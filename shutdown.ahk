@@ -116,7 +116,13 @@ if (!isShutdownScheduled)
     return
 
 FormatTime, currentTime, %A_Now%, HH:mm
-if (currentTime = shutdownTime) {
+remainingMinutes := GetTimeDifference(currentTime, shutdownTime)
+
+; 添加日志
+FileAppend, 当前时间: %currentTime%, 目标时间: %shutdownTime%, 剩余分钟: %remainingMinutes%`n, %A_ScriptDir%\shutdown_log.txt
+
+; 如果剩余时间小于等于0分钟，开始关机流程
+if (remainingMinutes <= 0) {
     StartCountdown()
 }
 return
@@ -126,12 +132,17 @@ StartCountdown() {
     global countdownSeconds
     remainingSeconds := countdownSeconds
     
+    ; 添加日志
+    FileAppend, 开始倒计时，剩余秒数: %remainingSeconds%`n, %A_ScriptDir%\shutdown_log.txt
+    
     while (remainingSeconds > 0) {
-        if (!isShutdownScheduled)
+        if (!isShutdownScheduled) {
+            FileAppend, 关机已取消`n, %A_ScriptDir%\shutdown_log.txt
             return
+        }
         
         if (Mod(remainingSeconds, 10) = 0 || remainingSeconds <= 5) {
-            SoundBeep, 750, 500  ; 发出提示音
+            SoundBeep, 750, 500
             TrayTip, 自动关机提醒, 系统将在 %remainingSeconds% 秒后关机`n右键点击托盘图标可取消, 30, 1
         }
         
@@ -139,8 +150,16 @@ StartCountdown() {
         remainingSeconds--
     }
     
-    if (isShutdownScheduled)
-        Shutdown, 1
+    if (isShutdownScheduled) {
+        FileAppend, 执行关机命令`n, %A_ScriptDir%\shutdown_log.txt
+        ; 使用完整的shutdown命令并以管理员权限运行
+        try {
+            Run *RunAs shutdown.exe -s -t 0
+        } catch {
+            ; 如果上面的命令失败，尝试直接使用Shutdown命令
+            Shutdown, 1
+        }
+    }
 }
 
 ; 计算时间差（分钟）
@@ -153,10 +172,13 @@ GetTimeDifference(currentTime, targetTime) {
     currentTotalMinutes := currentHour * 60 + currentMinute
     targetTotalMinutes := targetHour * 60 + targetMinute
     
-    if (targetTotalMinutes <= currentTotalMinutes)
-        targetTotalMinutes += 1440  ; 加24小时
+    timeDiff := targetTotalMinutes - currentTotalMinutes
+    
+    ; 如果目标时间小于当前时间，说明是明天的时间
+    if (timeDiff < 0)
+        timeDiff += 1440  ; 加24小时的分钟数
         
-    return targetTotalMinutes - currentTotalMinutes
+    return timeDiff
 }
 
 ; 保存配置
