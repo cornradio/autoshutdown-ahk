@@ -12,7 +12,9 @@
 - ❌ 随时可以取消关机计划
 
 
-![image](https://github.com/user-attachments/assets/a782d857-93d2-4bfe-93a9-3451b8ad59a7)
+
+<img width="285" alt="image" src="https://github.com/user-attachments/assets/6a724d17-d4dd-4b64-896a-8086f182d00a" />
+
 
 
 ## 使用方法
