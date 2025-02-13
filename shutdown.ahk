@@ -5,7 +5,7 @@ SetWorkingDir %A_ScriptDir%
 ; 初始化变量
 global shutdownTime := "23:00"
 global isShutdownScheduled := false
-global countdownSeconds := 20  ; 修改为25秒倒计时
+global countdownSeconds := 20  ; 修改为20秒倒计时
 
 
 ; 加载保存的配置
@@ -35,6 +35,8 @@ Menu, Tray, Add
 Menu, Tray, Add, 立即关机(&S), ShutdownNow  ; 添加立即关机选项
 Menu, Tray, Add, 取消关机(&C), CancelShutdown
 Menu, Tray, Add
+Menu, Tray, Add, 查看更新(&U), CheckForUpdates
+Menu, Tray, Add
 Menu, Tray, Add, 退出(&X), ExitApp
 
 ; 设置定时器检查时间
@@ -52,6 +54,10 @@ UpdateRemainingTime:
 if (!isShutdownScheduled) {
     Menu, Tray, Rename, 2&, 未设置关机时间
     return
+}
+
+CheckForUpdates() {
+    run, https://github.com/cornradio/autoshutdown-ahk
 }
 
 FormatTime, currentTime, %A_Now%, HH:mm
