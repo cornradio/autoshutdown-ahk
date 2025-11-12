@@ -15,6 +15,7 @@
 
 <img width="285" alt="image" src="https://github.com/user-attachments/assets/6a724d17-d4dd-4b64-896a-8086f182d00a" />
 
+<img width="285" height="315" alt="image" src="https://github.com/user-attachments/assets/7578412d-2ba3-4f81-bec0-829bf70c2912" />
 
 
 ## 使用方法
